@@ -2,9 +2,10 @@ import 'package:flutter/material.dart';
 
 
 import './item_card.dart';
+import '../../models/item_model.dart';
 
 class BucketList extends StatelessWidget {
-  final List<Map<String, dynamic>> bucketlist;
+  final List<Item> bucketlist;
 
   BucketList(this.bucketlist);
 

@@ -1,21 +1,20 @@
 import 'package:flutter/material.dart';
 
-// import 'home.dart';
-import 'item_create.dart';
+import 'item_edit.dart';
 import 'item_list.dart';
+import '../models/item_model.dart';
 
 class ProductsAdmin extends StatelessWidget {
-  final Function add;
-  final Function delete;
+  final List<Item> _bucketlist;
 
-  ProductsAdmin(this.add, this.delete);
+  final Function _add;
+  final Function _delete;
+  final Function _update;
 
-  @override
-  Widget build(BuildContext context) {
-    return DefaultTabController(
-      length: 2,
-      child: Scaffold(
-          drawer: Drawer(
+  ProductsAdmin(this._bucketlist, this._add, this._update, this._delete);
+
+  Widget _buildAdminDrawer(BuildContext context) {
+    return Drawer(
             child: Column(
               children: <Widget>[
                 AppBar(
@@ -33,7 +32,15 @@ class ProductsAdmin extends StatelessWidget {
                 )
               ],
             ),
-          ),
+          );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return DefaultTabController(
+      length: 2,
+      child: Scaffold(
+          drawer: _buildAdminDrawer(context),
           appBar: AppBar(
             title: Text('MANAGE ITEMS'),
             bottom: TabBar(
@@ -51,8 +58,8 @@ class ProductsAdmin extends StatelessWidget {
           ),
           body: TabBarView(
             children: <Widget>[
-              ItemCreatePage(add, delete),
-              ItemListPage(),
+              ItemEditPage(addItem: _add),
+              ItemListPage(_bucketlist, _update, _delete),
             ],
           )),
     );

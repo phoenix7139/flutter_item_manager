@@ -6,6 +6,7 @@ import './pages/authentication.dart';
 import './pages/item_admin.dart';
 import './pages/home.dart';
 import './pages/item_details.dart';
+import './models/item_model.dart';
 
 void main() {
   // debugPaintSizeEnabled = true;
@@ -22,11 +23,17 @@ class MyApp extends StatefulWidget {
 }
 
 class _MyAppState extends State<MyApp> {
-  List<Map<String, dynamic>> _bucketlist = [];
+  List<Item> _bucketlist = [];
 
-  void _addItem(Map<String, dynamic> item) {
+  void _addItem(Item item) {
     setState(() {
       _bucketlist.add(item);
+    });
+  }
+
+  void _updateItem(Item item, index) {
+    setState(() {
+      _bucketlist[index] = item;
     });
   }
 
@@ -42,19 +49,18 @@ class _MyAppState extends State<MyApp> {
       debugShowCheckedModeBanner: false,
       // debugShowMaterialGrid: true,
       theme: ThemeData(
-          brightness: Brightness.light,
-          primaryColor: Color(0xff2d767f),
-          // primarySwatch: Color(),
-          accentColor: Color(0xffb4f1f1),
-          // fontFamily: 'Oswald'
-          ),
+        brightness: Brightness.light,
+        primaryColor: Color(0xff2f8189),
+        // primarySwatch: Color(),
+        accentColor: Color(0xffb4f1f1),
+        // fontFamily: 'Oswald'
+      ),
       // home: AuthPage(),
       routes: {
-        "/": (BuildContext context) =>
-            AuthPage(),
-        "/display": (BuildContext context) =>
-            HomePage(_bucketlist),
-        "/admin": (BuildContext context) => ProductsAdmin(_addItem, _deleteItem),
+        "/": (BuildContext context) => AuthPage(),
+        "/display": (BuildContext context) => HomePage(_bucketlist),
+        "/admin": (BuildContext context) =>
+            ProductsAdmin(_bucketlist, _addItem, _updateItem, _deleteItem),
       },
       onGenerateRoute: (RouteSettings settings) {
         final List<String> pathElements = settings.name.split('/');
@@ -62,15 +68,18 @@ class _MyAppState extends State<MyApp> {
         if (pathElements[1] == 'item') {
           final int index = int.parse(pathElements[2]);
           return MaterialPageRoute<bool>(
-              builder: (BuildContext context) => Details(
-                  _bucketlist[index]['title'], _bucketlist[index]['image']));
+            builder: (BuildContext context) => Details(
+                _bucketlist[index].title,
+                _bucketlist[index].image,
+                _bucketlist[index].price,
+                _bucketlist[index].description),
+          );
         }
         return null;
       },
       onUnknownRoute: (RouteSettings settings) {
         return MaterialPageRoute(
-            builder: (BuildContext context) =>
-                HomePage(_bucketlist));
+            builder: (BuildContext context) => HomePage(_bucketlist));
       },
     );
   }

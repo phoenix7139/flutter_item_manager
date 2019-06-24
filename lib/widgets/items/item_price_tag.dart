@@ -1,10 +1,9 @@
 import 'package:flutter/material.dart';
 
 class PriceTag extends StatelessWidget {
-  final List<Map<String, dynamic>> _bucketlist;
-  final int _index;
+  final double _price;
 
-  PriceTag(this._bucketlist, this._index);
+  PriceTag(this._price);
 
   @override
   Widget build(BuildContext context) {
@@ -14,7 +13,7 @@ class PriceTag extends StatelessWidget {
                       color: Theme.of(context).accentColor,
                       borderRadius: BorderRadius.circular(8.0)),
                   child: Text(
-                    '₹ ${_bucketlist[_index]['price'].toString()}',
+                    '₹ $_price',
                     style: TextStyle(
                       color: Colors.white,
                     ),

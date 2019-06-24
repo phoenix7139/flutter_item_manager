@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 
 import './item_price_tag.dart';
+import '../../models/item_model.dart';
 
 class ItemCard extends StatelessWidget {
-  final List<Map<String, dynamic>> _bucketlist;
+  final List<Item> _bucketlist;
   final int _index;
 
   ItemCard(this._bucketlist, this._index);
@@ -14,7 +15,7 @@ class ItemCard extends StatelessWidget {
     return Card(
       child: Column(
         children: <Widget>[
-          Image.asset(_bucketlist[_index]['image']),
+          Image.asset(_bucketlist[_index].image),
           Container(
             padding: EdgeInsets.only(top: 10.0),
             child: Row(
@@ -22,7 +23,7 @@ class ItemCard extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.center,
               children: <Widget>[
                 Text(
-                  _bucketlist[_index]['title'],
+                  _bucketlist[_index].title,
                   style: TextStyle(
                       fontSize: 20.0,
                       fontWeight: FontWeight.bold,
@@ -31,7 +32,7 @@ class ItemCard extends StatelessWidget {
                 SizedBox(
                   width: 10.0,
                 ),
-                PriceTag(_bucketlist, _index),
+                PriceTag(_bucketlist[_index].price),
               ],
             ),
           ),

@@ -5,35 +5,35 @@ import 'package:flutter/material.dart';
 // import '../item_manager.dart';
 
 class Details extends StatelessWidget {
-  final String title;
-  final String imageURL;
+  final String _title;
+  final String _imageURL;
+  final double _price;
+  final String _description;
 
-  Details(this.title, this.imageURL);
+  Details(this._title, this._imageURL, this._price, this._description);
 
-  _showWarningDialog(BuildContext context) {
-    showDialog(
-        context: context,
-        builder: (BuildContext context) {
-          return AlertDialog(
-            title: Text('DELETE ITEM'),
-            content: Text('are you sure?'),
-            actions: <Widget>[
-              FlatButton(
-                child: Text('CONFIRM'),
-                onPressed: () {
-                  Navigator.pop(context);
-                  Navigator.pop(context, true);
-                },
-              ),
-              FlatButton(
-                child: Text('DISCARD'),
-                onPressed: () {
-                  Navigator.pop(context);
-                },
-              ),
-            ],
-          );
-        });
+  Widget _buildAddressPriceRow() {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      crossAxisAlignment: CrossAxisAlignment.center,
+      children: <Widget>[
+        Container(
+          padding: EdgeInsets.symmetric(horizontal: 2.0, vertical: 3.0),
+          margin: EdgeInsets.symmetric(horizontal: 2.0, vertical: 5.0),
+          child: Text('Kaushambi, New Delhi',
+              style: TextStyle(color: Colors.grey)),
+        ),
+        Container(
+          child: Text('|', style: TextStyle(color: Colors.grey)),
+        ),
+        Container(
+          padding: EdgeInsets.symmetric(horizontal: 2.0, vertical: 3.0),
+          margin: EdgeInsets.symmetric(horizontal: 2.0, vertical: 5.0),
+          child: Text('₹ ${_price.toString()}',
+              style: TextStyle(color: Colors.grey)),
+        ),
+      ],
+    );
   }
 
   @override
@@ -46,26 +46,40 @@ class Details extends StatelessWidget {
       child: Scaffold(
           appBar: AppBar(
             elevation: 10.0,
-            title: Text(title),
+            title: Text(_title),
           ),
           body: Center(
-              child: Column(
-            children: <Widget>[
-              Image.asset('assets/img.jpg'),
-              Container(padding: EdgeInsets.all(10.0), child: Text(title)),
-              Container(
-                  padding: EdgeInsets.all(10.0),
-                  child: RaisedButton(
-                    splashColor: Theme.of(context).primaryColor,
-                    animationDuration: Duration(seconds: 1),
-                    color: Theme.of(context).accentColor,
-                    child: Text("DELETE ITEM"),
-                    onPressed: () {
-                      _showWarningDialog(context);
-                    },
-                  ))
-            ],
-          ))),
+            child: Column(
+              children: <Widget>[
+                Image.asset(_imageURL),
+                Text(
+                  _title,
+                  style: TextStyle(
+                    fontSize: 25.0,
+                    fontWeight: FontWeight.bold,
+                    fontFamily: 'Oswald',
+                  ),
+                ),
+                Container(
+                  padding: EdgeInsets.only(top: 10.0),
+                  child: _buildAddressPriceRow(),
+                ),
+                Container(
+                  margin: EdgeInsets.all(15.0),
+                  padding: EdgeInsets.all(5.0),
+                  child: Text(
+                    _description,
+                    style: TextStyle(
+                      fontSize: 17.0,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+
+                // Text(bucketlist[index]['description']),
+              ],
+            ),
+          )),
     );
   }
 }
