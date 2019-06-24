@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 // import 'package:flutter/rendering.dart';
 
 // import './item_adder.dart';
-// import './pages/authentication.dart';
+import './pages/authentication.dart';
 import './pages/item_admin.dart';
 import './pages/home.dart';
 import './pages/item_details.dart';
@@ -22,9 +22,9 @@ class MyApp extends StatefulWidget {
 }
 
 class _MyAppState extends State<MyApp> {
-  List<Map<String, String>> _bucketlist = [];
+  List<Map<String, dynamic>> _bucketlist = [];
 
-  void _addItem(Map<String, String> item) {
+  void _addItem(Map<String, dynamic> item) {
     setState(() {
       _bucketlist.add(item);
     });
@@ -43,13 +43,18 @@ class _MyAppState extends State<MyApp> {
       // debugShowMaterialGrid: true,
       theme: ThemeData(
           brightness: Brightness.light,
-          primarySwatch: Colors.purple,
-          accentColor: Colors.amber),
+          primaryColor: Color(0xff2d767f),
+          // primarySwatch: Color(),
+          accentColor: Color(0xffb4f1f1),
+          // fontFamily: 'Oswald'
+          ),
       // home: AuthPage(),
       routes: {
         "/": (BuildContext context) =>
-            HomePage(_bucketlist, _addItem, _deleteItem),
-        "/admin": (BuildContext context) => ProductsAdmin(),
+            AuthPage(),
+        "/display": (BuildContext context) =>
+            HomePage(_bucketlist),
+        "/admin": (BuildContext context) => ProductsAdmin(_addItem, _deleteItem),
       },
       onGenerateRoute: (RouteSettings settings) {
         final List<String> pathElements = settings.name.split('/');
@@ -65,7 +70,7 @@ class _MyAppState extends State<MyApp> {
       onUnknownRoute: (RouteSettings settings) {
         return MaterialPageRoute(
             builder: (BuildContext context) =>
-                HomePage(_bucketlist, _addItem, _deleteItem));
+                HomePage(_bucketlist));
       },
     );
   }

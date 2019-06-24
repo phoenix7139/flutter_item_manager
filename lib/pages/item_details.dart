@@ -1,6 +1,5 @@
 import 'dart:async';
 
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
 // import '../item_manager.dart';
@@ -11,10 +10,7 @@ class Details extends StatelessWidget {
 
   Details(this.title, this.imageURL);
 
-  
-
   _showWarningDialog(BuildContext context) {
-  
     showDialog(
         context: context,
         builder: (BuildContext context) {
@@ -61,6 +57,7 @@ class Details extends StatelessWidget {
                   padding: EdgeInsets.all(10.0),
                   child: RaisedButton(
                     splashColor: Theme.of(context).primaryColor,
+                    animationDuration: Duration(seconds: 1),
                     color: Theme.of(context).accentColor,
                     child: Text("DELETE ITEM"),
                     onPressed: () {
