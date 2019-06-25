@@ -1,5 +1,9 @@
 import 'package:flutter/material.dart';
 
+import 'package:scoped_model/scoped_model.dart';
+
+import '../scoped-models/main_scoped_model.dart';
+
 class AuthPage extends StatefulWidget {
   @override
   State<StatefulWidget> createState() {
@@ -67,7 +71,7 @@ class _AuthPageState extends State<AuthPage> {
   DecorationImage _buildBackgroundImage() {
     return DecorationImage(
       fit: BoxFit.cover,
-      image: AssetImage('assets/loginImg.jpg'),
+      image: AssetImage('assets/altLoginImg.jpg'),
       // colorFilter: ColorFilter.mode(
       // Colors.grey.withOpacity(0.6), BlendMode.dstATop)
     );
@@ -85,7 +89,7 @@ class _AuthPageState extends State<AuthPage> {
     );
   }
 
-  void _submitForm() {
+  void _submitForm(Function _loginUser) {
     if (!_formKey.currentState.validate()) {
       return;
     }
@@ -96,6 +100,7 @@ class _AuthPageState extends State<AuthPage> {
       return;
     }
     _formKey.currentState.save();
+    _loginUser(_formData['email'], _formData['password']);
     Navigator.pushReplacementNamed(context, '/display');
   }
 
@@ -106,11 +111,11 @@ class _AuthPageState extends State<AuthPage> {
         : MediaQuery.of(context).size.width * 0.95;
 
     return Scaffold(
-      appBar: AppBar(
-        title: Center(
-          child: Text('LOGIN PAGE'),
-        ),
-      ),
+      // appBar: AppBar(
+      //   title: Center(
+      //     child: Text('LOGIN PAGE'),
+      //   ),
+      // ),
       body: Container(
         decoration: BoxDecoration(
           image: _buildBackgroundImage(),
@@ -142,13 +147,18 @@ class _AuthPageState extends State<AuthPage> {
                     ),
                     Align(
                       alignment: Alignment.bottomRight,
-                      child: FlatButton(
-                        splashColor: Theme.of(context).accentColor,
-                        child: Text(
-                          'LOGIN',
-                          style: TextStyle(fontSize: 15.0),
-                        ),
-                        onPressed: _submitForm,
+                      child: ScopedModelDescendant<MainModel>(
+                        builder: (BuildContext context, Widget child,
+                            MainModel model) {
+                          return FlatButton(
+                            splashColor: Theme.of(context).accentColor,
+                            child: Text(
+                              'LOGIN',
+                              style: TextStyle(fontSize: 15.0),
+                            ),
+                            onPressed: () => _submitForm(model.login),
+                          );
+                        },
                       ),
                     ),
                   ],

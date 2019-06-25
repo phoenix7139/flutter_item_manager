@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:scoped_model/scoped_model.dart';
 
 import './item_price_tag.dart';
 import '../../models/item_model.dart';
+import '../../scoped-models/main_scoped_model.dart';
 
 class ItemCard extends StatelessWidget {
   final List<Item> _bucketlist;
@@ -9,13 +11,12 @@ class ItemCard extends StatelessWidget {
 
   ItemCard(this._bucketlist, this._index);
 
-
   @override
   Widget build(BuildContext context) {
     return Card(
       child: Column(
         children: <Widget>[
-          Image.asset(_bucketlist[_index].image),
+          Image.network(_bucketlist[_index].image),
           Container(
             padding: EdgeInsets.only(top: 10.0),
             child: Row(
@@ -45,6 +46,7 @@ class ItemCard extends StatelessWidget {
                 borderRadius: BorderRadius.circular(6.0)),
             child: Text('Kaushambi, New Delhi'),
           ),
+          Text(_bucketlist[_index].userEmail),
           // Text(bucketlist[index]['description']),
           ButtonBar(
             alignment: MainAxisAlignment.center,
@@ -57,11 +59,20 @@ class ItemCard extends StatelessWidget {
                       context, '/item/' + _index.toString());
                 },
               ),
-              IconButton(
-                color: Theme.of(context).primaryColor,
-                icon: Icon(Icons.favorite_border),
-                onPressed: () {},
-              )
+              ScopedModelDescendant<MainModel>(
+                builder: (BuildContext context, Widget child, MainModel model) {
+                  return IconButton(
+                    color: Theme.of(context).primaryColor,
+                    icon: Icon(model.allItems[_index].isFavourite
+                        ? Icons.favorite
+                        : Icons.favorite_border),
+                    onPressed: () {
+                      model.selectItem(_index);
+                      model.toggleIsFavourite();
+                    },
+                  );
+                },
+              ),
             ],
           )
         ],

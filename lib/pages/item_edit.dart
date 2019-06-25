@@ -1,19 +1,12 @@
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+
+import 'package:scoped_model/scoped_model.dart';
 
 import '../widgets/helpers/ensure_visible.dart';
 import '../models/item_model.dart';
+import '../scoped-models/main_scoped_model.dart';
 
 class ItemEditPage extends StatefulWidget {
-  final Function addItem;
-  final Function updateItem;
-
-  final Item bucketlist;
-  final int productIndex;
-
-  ItemEditPage(
-      {this.addItem, this.updateItem, this.bucketlist, this.productIndex});
-
   @override
   State<StatefulWidget> createState() {
     return _ItemEditPageState();
@@ -32,7 +25,7 @@ class _ItemEditPageState extends State<ItemEditPage> {
   final _descFocusNode = FocusNode();
   final _priceFocusNode = FocusNode();
 
-  Widget _buidldTitleTextField() {
+  Widget _buidldTitleTextField(Item bucketlist) {
     return EnsureVisibleWhenFocused(
       focusNode: _titleFocusNode,
       child: TextFormField(
@@ -45,7 +38,7 @@ class _ItemEditPageState extends State<ItemEditPage> {
               borderSide: new BorderSide(color: Theme.of(context).primaryColor),
               borderRadius: new BorderRadius.circular(10)),
         ),
-        initialValue: widget.bucketlist == null ? '' : widget.bucketlist.title,
+        initialValue: bucketlist == null ? '' : bucketlist.title,
         onSaved: (String value) {
           _formData['title'] = value;
         },
@@ -56,7 +49,7 @@ class _ItemEditPageState extends State<ItemEditPage> {
     );
   }
 
-  Widget _buildDescriptionTextField() {
+  Widget _buildDescriptionTextField(Item bucketlist) {
     return EnsureVisibleWhenFocused(
       focusNode: _descFocusNode,
       child: TextFormField(
@@ -70,8 +63,7 @@ class _ItemEditPageState extends State<ItemEditPage> {
               borderRadius: new BorderRadius.circular(10)),
         ),
         maxLines: 4,
-        initialValue:
-            widget.bucketlist == null ? '' : widget.bucketlist.description,
+        initialValue: bucketlist == null ? '' : bucketlist.description,
         onSaved: (String value) {
           _formData['description'] = value;
         },
@@ -82,7 +74,7 @@ class _ItemEditPageState extends State<ItemEditPage> {
     );
   }
 
-  Widget _buildPriceField() {
+  Widget _buildPriceField(Item bucketlist) {
     return EnsureVisibleWhenFocused(
       focusNode: _priceFocusNode,
       child: TextFormField(
@@ -96,8 +88,7 @@ class _ItemEditPageState extends State<ItemEditPage> {
               borderRadius: new BorderRadius.circular(10)),
         ),
         keyboardType: TextInputType.number,
-        initialValue:
-            widget.bucketlist == null ? '' : widget.bucketlist.price.toString(),
+        initialValue: bucketlist == null ? '' : bucketlist.price.toString(),
         onSaved: (String value) {
           _formData['price'] = double.parse(value);
         },
@@ -110,49 +101,58 @@ class _ItemEditPageState extends State<ItemEditPage> {
     );
   }
 
-  Widget _buildSubmitButton() {
-    return Align(
-      alignment: Alignment.bottomRight,
-      child: FlatButton(
-        splashColor: Theme.of(context).primaryColor,
-        child: widget.bucketlist == null ? Text('ADD') : Text('UPDATE'),
-        onPressed: _addItemAndExitPage,
-      ),
+  Widget _buildSubmitButton(Item bucketlist) {
+    return ScopedModelDescendant<MainModel>(
+      builder: (BuildContext context, Widget child, MainModel model) {
+        return Align(
+          alignment: Alignment.bottomRight,
+          child: model.isLoading
+              ? LinearProgressIndicator()
+              : FlatButton(
+                  splashColor: Theme.of(context).primaryColor,
+                  child: bucketlist == null ? Text('ADD') : Text('UPDATE'),
+                  onPressed: () => _addItemAndExitPage(
+                      model.addItem,
+                      model.updateItem,
+                      model.selectItem,
+                      model.selectedItemIndex),
+                ),
+        );
+      },
     );
   }
 
-  void _addItemAndExitPage() {
+  void _addItemAndExitPage(Function _addItem, Function _updateItem,
+      Function _setSelectedProduct, int selectedItemIndex) {
     if (!_formKey.currentState.validate()) {
       return;
     }
     _formKey.currentState.save();
-    if (widget.bucketlist == null) {
-      widget.addItem(Item(
-        title: _formData['title'],
-        description: _formData['description'],
-        price: _formData['price'],
-        image: _formData['image'],
-      ));
+    if (selectedItemIndex == null) {
+      _addItem(
+        _formData['title'],
+        _formData['description'],
+        _formData['image'],
+        _formData['price'],
+      ).then((_) => Navigator.pushReplacementNamed(context, '/display')
+        .then((_) => _setSelectedProduct(null)));
     } else {
-      widget.updateItem(
-          Item(
-            title: _formData['title'],
-            description: _formData['description'],
-            price: _formData['price'],
-            image: _formData['image'],
-          ),
-          widget.productIndex);
+      _updateItem(
+        _formData['title'],
+        _formData['description'],
+        _formData['image'],
+        _formData['price'],
+      ).then((_) => Navigator.pushReplacementNamed(context, '/display')
+        .then((_) => _setSelectedProduct(null)));
     }
-    Navigator.pushReplacementNamed(context, '/display');
+    
   }
 
-  @override
-  Widget build(BuildContext context) {
+  Widget _buildPageContent(BuildContext context, Item selectedItem) {
     final double _targetWidth = MediaQuery.of(context).size.width > 550.0
         ? 500.0
         : MediaQuery.of(context).size.width * 0.95;
-
-    final Widget PageContent = GestureDetector(
+    return GestureDetector(
       onTap: () {
         FocusScope.of(context).requestFocus(FocusNode());
       },
@@ -168,32 +168,41 @@ class _ItemEditPageState extends State<ItemEditPage> {
               SizedBox(
                 height: 10.0,
               ),
-              _buidldTitleTextField(),
+              _buidldTitleTextField(selectedItem),
               SizedBox(
                 height: 10.0,
               ),
-              _buildDescriptionTextField(),
+              _buildDescriptionTextField(selectedItem),
               SizedBox(
                 height: 10.0,
               ),
-              _buildPriceField(),
+              _buildPriceField(selectedItem),
               SizedBox(
                 height: 20.0,
               ),
-              _buildSubmitButton()
+              _buildSubmitButton(selectedItem)
             ],
           ),
         ),
       ),
     );
+  }
 
-    return widget.bucketlist == null
-        ? PageContent
-        : Scaffold(
-            appBar: AppBar(
-              title: Text('EDIT ITEM : ${widget.bucketlist.title}'),
-            ),
-            body: PageContent,
-          );
+  @override
+  Widget build(BuildContext context) {
+    return ScopedModelDescendant<MainModel>(
+      builder: (BuildContext context, Widget child, MainModel model) {
+        final Widget PageContent =
+            _buildPageContent(context, model.selectedItem);
+        return model.selectedItemIndex == null
+            ? PageContent
+            : Scaffold(
+                appBar: AppBar(
+                  title: Text('EDIT ITEM : ${model.selectedItem.title}'),
+                ),
+                body: PageContent,
+              );
+      },
+    );
   }
 }
