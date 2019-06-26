@@ -104,38 +104,55 @@ class _ItemEditPageState extends State<ItemEditPage> {
   Widget _buildSubmitButton(Item bucketlist) {
     return ScopedModelDescendant<MainModel>(
       builder: (BuildContext context, Widget child, MainModel model) {
-        return Align(
-          alignment: Alignment.bottomRight,
-          child: model.isLoading
+        return model.isLoading
               ? LinearProgressIndicator()
               : FlatButton(
                   splashColor: Theme.of(context).primaryColor,
-                  child: bucketlist == null ? Text('ADD') : Text('UPDATE'),
+                  child: Text('SAVE'),
                   onPressed: () => _addItemAndExitPage(
                       model.addItem,
                       model.updateItem,
                       model.selectItem,
                       model.selectedItemIndex),
-                ),
-        );
+                );
+        
       },
     );
   }
 
   void _addItemAndExitPage(Function _addItem, Function _updateItem,
-      Function _setSelectedProduct, int selectedItemIndex) {
+      Function _setSelectedProduct, [int selectedItemIndex]) {
     if (!_formKey.currentState.validate()) {
       return;
     }
     _formKey.currentState.save();
-    if (selectedItemIndex == null) {
+    if (selectedItemIndex == -1) {
       _addItem(
         _formData['title'],
         _formData['description'],
         _formData['image'],
         _formData['price'],
-      ).then((_) => Navigator.pushReplacementNamed(context, '/display')
-        .then((_) => _setSelectedProduct(null)));
+      ).then((bool success) {
+        if (success) {
+          Navigator.pushReplacementNamed(context, '/display')
+              .then((_) => _setSelectedProduct(null));
+        } else {
+          showDialog(
+              context: context,
+              builder: (BuildContext context) {
+                return AlertDialog(
+                  title: Text('SOMETHING WENT WRONG'),
+                  content: Text('please try again'),
+                  actions: <Widget>[
+                    FlatButton(
+                      onPressed: () => Navigator.of(context).pop(),
+                      child: Text('OKAY'),
+                    ),
+                  ],
+                );
+              });
+        }
+      });
     } else {
       _updateItem(
         _formData['title'],
@@ -143,9 +160,8 @@ class _ItemEditPageState extends State<ItemEditPage> {
         _formData['image'],
         _formData['price'],
       ).then((_) => Navigator.pushReplacementNamed(context, '/display')
-        .then((_) => _setSelectedProduct(null)));
+          .then((_) => _setSelectedProduct(null)));
     }
-    
   }
 
   Widget _buildPageContent(BuildContext context, Item selectedItem) {
@@ -194,7 +210,7 @@ class _ItemEditPageState extends State<ItemEditPage> {
       builder: (BuildContext context, Widget child, MainModel model) {
         final Widget PageContent =
             _buildPageContent(context, model.selectedItem);
-        return model.selectedItemIndex == null
+        return model.selectedItemIndex == -1
             ? PageContent
             : Scaffold(
                 appBar: AppBar(

@@ -5,11 +5,12 @@ import 'package:scoped_model/scoped_model.dart';
 
 // import '../item_manager.dart';
 import '../scoped-models/main_scoped_model.dart';
+import '../models/item_model.dart';
 
 class Details extends StatelessWidget {
-  final int _productIndex;
+  final Item item;
 
-  Details(this._productIndex);
+  Details(this.item);
 
   Widget _buildAddressPriceRow(String price) {
     return Row(
@@ -42,47 +43,48 @@ class Details extends StatelessWidget {
         Navigator.pop(context, false);
         return Future.value(false);
       },
-      child: ScopedModelDescendant<MainModel>(
-        builder: (BuildContext context, Widget child, MainModel model) {
-          return Scaffold(
-            appBar: AppBar(
-              elevation: 10.0,
-              title: Text(model.allItems[_productIndex].title),
-            ),
-            body: Center(
-              child: Column(
-                children: <Widget>[
-                  Image.network(model.allItems[_productIndex].image),
-                  Text(
-                    model.allItems[_productIndex].title,
-                    style: TextStyle(
-                      fontSize: 25.0,
-                      fontWeight: FontWeight.bold,
-                      fontFamily: 'Oswald',
-                    ),
-                  ),
-                  Container(
-                    padding: EdgeInsets.only(top: 10.0),
-                    child: _buildAddressPriceRow(model.allItems[_productIndex].price.toString()),
-                  ),
-                  Container(
-                    margin: EdgeInsets.all(15.0),
-                    padding: EdgeInsets.all(5.0),
-                    child: Text(
-                      model.allItems[_productIndex].description,
-                      style: TextStyle(
-                        fontSize: 17.0,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ),
-
-                  // Text(bucketlist[index]['description']),
-                ],
+      child: Scaffold(
+        appBar: AppBar(
+          elevation: 10.0,
+          title: Text(item.title),
+        ),
+        body: Center(
+          child: Column(
+            children: <Widget>[
+              FadeInImage(
+                image: NetworkImage(item.image),
+                height: 300.0,
+                fit: BoxFit.cover,
+                placeholder: AssetImage('assets/img.jpg'),
               ),
-            ),
-          );
-        },
+              Text(
+                item.title,
+                style: TextStyle(
+                  fontSize: 25.0,
+                  fontWeight: FontWeight.bold,
+                  fontFamily: 'Oswald',
+                ),
+              ),
+              Container(
+                padding: EdgeInsets.only(top: 10.0),
+                child: _buildAddressPriceRow(item.price.toString()),
+              ),
+              Container(
+                margin: EdgeInsets.all(15.0),
+                padding: EdgeInsets.all(5.0),
+                child: Text(
+                  item.description,
+                  style: TextStyle(
+                    fontSize: 17.0,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+
+              // Text(bucketlist[index]['description']),
+            ],
+          ),
+        ),
       ),
     );
   }

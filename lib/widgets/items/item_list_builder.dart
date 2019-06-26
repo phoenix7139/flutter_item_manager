@@ -14,7 +14,7 @@ class BuildItemList extends StatelessWidget {
     if (bucketlist.length > 0) {
       defaultCard = ListView.builder(
         itemBuilder: (BuildContext context, int index) =>
-            ItemCard(bucketlist, index),
+            ItemCard(bucketlist[index], index),
         itemCount: bucketlist.length,
       );
     }

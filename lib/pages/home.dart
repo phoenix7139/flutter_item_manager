@@ -53,9 +53,14 @@ class _HomePageState extends State<HomePage> {
       if (model.displayedItems.length > 0 && !model.isLoading) {
         content = BuildItemList();
       } else if (model.isLoading) {
-        content = LinearProgressIndicator(backgroundColor: Colors.green,);
+        content = LinearProgressIndicator(
+          backgroundColor: Colors.green,
+        );
       }
-      return content;
+      return RefreshIndicator(
+        onRefresh: model.fetchItems,
+        child: content,
+      );
     });
   }
 

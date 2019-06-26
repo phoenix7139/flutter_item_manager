@@ -9,6 +9,7 @@ import './pages/item_admin.dart';
 import './pages/home.dart';
 import './pages/item_details.dart';
 import './scoped-models/main_scoped_model.dart';
+import './models/item_model.dart';
 
 void main() {
   // debugPaintSizeEnabled = true;
@@ -50,9 +51,12 @@ class _MyAppState extends State<MyApp> {
           final List<String> pathElements = settings.name.split('/');
           if (pathElements[0] != '') return null;
           if (pathElements[1] == 'item') {
-            final int index = int.parse(pathElements[2]);
+            final String itemUid = pathElements[2];
+            final Item item = model.allItems.firstWhere((Item item) {
+              return item.id == itemUid;
+            });
             return MaterialPageRoute<bool>(
-              builder: (BuildContext context) => Details(index),
+              builder: (BuildContext context) => Details(item),
             );
           }
           return null;

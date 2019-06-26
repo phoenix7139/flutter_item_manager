@@ -6,38 +6,36 @@ import './item_edit.dart';
 import '../scoped-models/main_scoped_model.dart';
 
 class ItemListPage extends StatefulWidget {
-   final MainModel model;
+  final MainModel model;
 
-   ItemListPage(this.model);
-   
+  ItemListPage(this.model);
+
   @override
   State<StatefulWidget> createState() {
     return _ItemListPageState();
   }
 }
-class _ItemListPageState extends State<ItemListPage>
-{
+
+class _ItemListPageState extends State<ItemListPage> {
   @override
   initState() {
     widget.model.fetchItems();
     super.initState();
   }
 
-
   Widget _buildEditButton(BuildContext context, int index, MainModel model) {
-    return IconButton(
+    return model.isLoading ? CircularProgressIndicator() : IconButton(
       icon: Icon(Icons.edit),
       onPressed: () {
-        model.selectItem(index);
+        model.selectItem(model.allItems[index].id);
         Navigator.of(context).push(
           MaterialPageRoute(builder: (BuildContext context) {
             return ItemEditPage();
           }),
-        ).then(
-          (_) {
-            model.selectItem(null);
-          },
         );
+        // .then((_) {
+        //   model.selectItem(null);
+        // });
       },
     );
   }
@@ -57,7 +55,7 @@ class _ItemListPageState extends State<ItemListPage>
               key: Key(model.allItems[index].title),
               onDismissed: (DismissDirection direction) {
                 if (direction == DismissDirection.startToEnd) {
-                  model.selectItem(index);
+                  model.selectItem(model.allItems[index].id);
                   model.deleteItem();
                   Scaffold.of(context).showSnackBar(
                     SnackBar(
@@ -67,12 +65,21 @@ class _ItemListPageState extends State<ItemListPage>
                   );
                 }
                 if (direction == DismissDirection.endToStart) {
-                  model.selectItem(index);
-                  Navigator.of(context).push(
-                    MaterialPageRoute(builder: (BuildContext context) {
-                      return ItemEditPage();
-                    }),
+                  model.selectItem(model.allItems[index].id);
+                  model.deleteItem();
+                  Scaffold.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text('ITEM DELETED'),
+                      duration: Duration(seconds: 1),
+                    ),
                   );
+
+                  // model.selectItem(model.allItems[index].id);
+                  // Navigator.of(context).push(
+                  //   MaterialPageRoute(builder: (BuildContext context) {
+                  //     return ItemEditPage();
+                  //   }),
+                  // );
                 }
               },
               background: Container(
@@ -85,15 +92,24 @@ class _ItemListPageState extends State<ItemListPage>
                     onPressed: () {},
                   )),
               secondaryBackground: Container(
-                color: Colors.green,
-                child: IconButton(
-                  // color: Colors.white,
-                  padding: EdgeInsets.only(right: 25.0),
-                  alignment: Alignment.centerRight,
-                  icon: Icon(Icons.edit),
-                  onPressed: () {},
-                ),
-              ),
+                  color: Colors.red,
+                  child: IconButton(
+                    color: Colors.white,
+                    padding: EdgeInsets.only(right: 25.0),
+                    alignment: Alignment.centerRight,
+                    icon: Icon(Icons.delete),
+                    onPressed: () {},
+                  )),
+              // Container(
+              //   color: Colors.green,
+              //   child: IconButton(
+              //     // color: Colors.white,
+              //     padding: EdgeInsets.only(right: 25.0),
+              //     alignment: Alignment.centerRight,
+              //     icon: Icon(Icons.edit),
+              //     onPressed: () {},
+              //   ),
+              // ),
               child: ListTile(
                 contentPadding:
                     EdgeInsets.symmetric(horizontal: 20.0, vertical: 10.0),

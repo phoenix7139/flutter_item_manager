@@ -6,17 +6,22 @@ import '../../models/item_model.dart';
 import '../../scoped-models/main_scoped_model.dart';
 
 class ItemCard extends StatelessWidget {
-  final List<Item> _bucketlist;
+  final Item item;
   final int _index;
 
-  ItemCard(this._bucketlist, this._index);
+  ItemCard(this.item, this._index);
 
   @override
   Widget build(BuildContext context) {
     return Card(
       child: Column(
         children: <Widget>[
-          Image.network(_bucketlist[_index].image),
+          FadeInImage(
+            image: NetworkImage(item.image),
+            height: 300.0,
+            fit: BoxFit.cover,
+            placeholder: AssetImage('assets/img.jpg'),
+          ),
           Container(
             padding: EdgeInsets.only(top: 10.0),
             child: Row(
@@ -24,7 +29,7 @@ class ItemCard extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.center,
               children: <Widget>[
                 Text(
-                  _bucketlist[_index].title,
+                  item.title,
                   style: TextStyle(
                       fontSize: 20.0,
                       fontWeight: FontWeight.bold,
@@ -33,7 +38,7 @@ class ItemCard extends StatelessWidget {
                 SizedBox(
                   width: 10.0,
                 ),
-                PriceTag(_bucketlist[_index].price),
+                PriceTag(item.price),
               ],
             ),
           ),
@@ -46,35 +51,35 @@ class ItemCard extends StatelessWidget {
                 borderRadius: BorderRadius.circular(6.0)),
             child: Text('Kaushambi, New Delhi'),
           ),
-          Text(_bucketlist[_index].userEmail),
+          Text(item.userEmail),
           // Text(bucketlist[index]['description']),
-          ButtonBar(
-            alignment: MainAxisAlignment.center,
-            children: <Widget>[
-              IconButton(
-                // color: Theme.of(context).primaryColor,
-                icon: Icon(Icons.info),
-                onPressed: () {
-                  Navigator.pushNamed<bool>(
-                      context, '/item/' + _index.toString());
-                },
-              ),
-              ScopedModelDescendant<MainModel>(
-                builder: (BuildContext context, Widget child, MainModel model) {
-                  return IconButton(
+          ScopedModelDescendant<MainModel>(
+            builder: (BuildContext context, Widget child, MainModel model) {
+              return ButtonBar(
+                alignment: MainAxisAlignment.center,
+                children: <Widget>[
+                  IconButton(
+                    // color: Theme.of(context).primaryColor,
+                    icon: Icon(Icons.info),
+                    onPressed: () {
+                      Navigator.pushNamed<bool>(
+                          context, '/item/' + model.allItems[_index].id);
+                    },
+                  ),
+                  IconButton(
                     color: Theme.of(context).primaryColor,
                     icon: Icon(model.allItems[_index].isFavourite
                         ? Icons.favorite
                         : Icons.favorite_border),
                     onPressed: () {
-                      model.selectItem(_index);
+                      model.selectItem(model.allItems[_index].id);
                       model.toggleIsFavourite();
                     },
-                  );
-                },
-              ),
-            ],
-          )
+                  )
+                ],
+              );
+            },
+          ),
         ],
       ),
     );
