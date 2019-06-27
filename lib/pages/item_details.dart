@@ -1,10 +1,8 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
-import 'package:scoped_model/scoped_model.dart';
 
-// import '../item_manager.dart';
-import '../scoped-models/main_scoped_model.dart';
+
 import '../models/item_model.dart';
 
 class Details extends StatelessWidget {

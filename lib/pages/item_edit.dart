@@ -18,7 +18,7 @@ class _ItemEditPageState extends State<ItemEditPage> {
     'title': null,
     'description': null,
     'price': null,
-    'image': 'assets/img.jpg',
+    'image': 'https://media.istockphoto.com/photos/blurred-backgroundabstract-background-with-bokeh-defocused-ligh-picture-id483416992?k=6&m=483416992&s=612x612&w=0&h=eEASdxV0G3OqF0k_IlKjU4FwMuBud231aqMSFu1IAh8=',
   };
   final GlobalKey<FormState> _formKey = GlobalKey();
   final _titleFocusNode = FocusNode();
@@ -208,15 +208,15 @@ class _ItemEditPageState extends State<ItemEditPage> {
   Widget build(BuildContext context) {
     return ScopedModelDescendant<MainModel>(
       builder: (BuildContext context, Widget child, MainModel model) {
-        final Widget PageContent =
+        final Widget pageContent =
             _buildPageContent(context, model.selectedItem);
         return model.selectedItemIndex == -1
-            ? PageContent
+            ? pageContent
             : Scaffold(
                 appBar: AppBar(
                   title: Text('EDIT ITEM : ${model.selectedItem.title}'),
                 ),
-                body: PageContent,
+                body: pageContent,
               );
       },
     );

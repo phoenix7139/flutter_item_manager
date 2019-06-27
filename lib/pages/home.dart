@@ -4,6 +4,8 @@ import 'package:scoped_model/scoped_model.dart';
 import '../widgets/items/item_list_builder.dart';
 import '../scoped-models/main_scoped_model.dart';
 
+import '../widgets/ui_elements/logout_list_tile.dart';
+
 class HomePage extends StatefulWidget {
   final MainModel model;
 
@@ -32,13 +34,14 @@ class _HomePageState extends State<HomePage> {
             backgroundColor: Theme.of(context).primaryColor,
           ),
           ListTile(
-            subtitle: Text('to manage items'),
+            // subtitle: Text('to manage items'),
             leading: Icon(Icons.edit),
             title: Text('MANAGE ITEMS'),
             onTap: () {
               Navigator.pushReplacementNamed(context, '/admin');
             },
-          )
+          ),
+          LogoutListTile(),
         ],
       ),
     );
@@ -69,7 +72,7 @@ class _HomePageState extends State<HomePage> {
     return Scaffold(
       drawer: _buildHomeDrawer(context),
       appBar: AppBar(
-        title: Text('BucketList'),
+        title: Text('ITEMS LIST'),
         actions: <Widget>[
           ScopedModelDescendant<MainModel>(
             builder: (BuildContext context, Widget child, MainModel model) {

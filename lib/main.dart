@@ -26,11 +26,24 @@ class MyApp extends StatefulWidget {
 }
 
 class _MyAppState extends State<MyApp> {
+  final MainModel _model = MainModel();
+  bool _isAuthenticated = false;
+
+  @override
+  void initState() {
+    _model.autoAuthenticate();
+    _model.userSubject.listen((bool isAuthenticated) {
+      setState(() {
+        _isAuthenticated = isAuthenticated;
+      });
+    });
+    super.initState();
+  }
+
   @override
   Widget build(BuildContext context) {
-    final MainModel model = MainModel();
     return ScopedModel<MainModel>(
-      model: model,
+      model: _model,
       child: MaterialApp(
         debugShowCheckedModeBanner: false,
         // debugShowMaterialGrid: true,
@@ -43,27 +56,35 @@ class _MyAppState extends State<MyApp> {
         ),
         // home: AuthPage(),
         routes: {
-          "/": (BuildContext context) => AuthPage(),
-          "/display": (BuildContext context) => HomePage(model),
-          "/admin": (BuildContext context) => ItemsAdmin(model),
+          "/": (BuildContext context) =>
+              !_isAuthenticated ? AuthPage() : HomePage(_model),
+          "/admin": (BuildContext context) =>
+              !_isAuthenticated ? AuthPage() : ItemsAdmin(_model),
         },
         onGenerateRoute: (RouteSettings settings) {
+          if (!_isAuthenticated) {
+            return MaterialPageRoute<bool>(
+              builder: (BuildContext context) => AuthPage(),
+            );
+          }
           final List<String> pathElements = settings.name.split('/');
           if (pathElements[0] != '') return null;
           if (pathElements[1] == 'item') {
             final String itemUid = pathElements[2];
-            final Item item = model.allItems.firstWhere((Item item) {
+            final Item item = _model.allItems.firstWhere((Item item) {
               return item.id == itemUid;
             });
             return MaterialPageRoute<bool>(
-              builder: (BuildContext context) => Details(item),
+              builder: (BuildContext context) =>
+                  !_isAuthenticated ? AuthPage() : Details(item),
             );
           }
           return null;
         },
         onUnknownRoute: (RouteSettings settings) {
           return MaterialPageRoute(
-              builder: (BuildContext context) => HomePage(model));
+              builder: (BuildContext context) =>
+                  !_isAuthenticated ? AuthPage() : HomePage(_model));
         },
       ),
     );

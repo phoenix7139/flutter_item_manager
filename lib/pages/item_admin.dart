@@ -5,6 +5,8 @@ import 'item_edit.dart';
 import 'item_list.dart';
 import '../scoped-models/main_scoped_model.dart';
 
+import '../widgets/ui_elements/logout_list_tile.dart';
+
 class ItemsAdmin extends StatelessWidget {
   final MainModel model;
 
@@ -24,9 +26,10 @@ class ItemsAdmin extends StatelessWidget {
             leading: Icon(Icons.list),
             title: Text('ALL ITEMS'),
             onTap: () {
-              Navigator.pushReplacementNamed(context, '/display');
+              Navigator.pushReplacementNamed(context, '/');
             },
-          )
+          ),
+          LogoutListTile(),
         ],
       ),
     );

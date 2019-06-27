@@ -3,9 +3,12 @@ import 'dart:async';
 
 import 'package:scoped_model/scoped_model.dart';
 import 'package:http/http.dart' as http;
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:rxdart/subjects.dart';
 
 import '../models/user_model.dart';
 import '../models/item_model.dart';
+import '../models/auth_mode.dart';
 
 mixin ConnectedModel on Model {
   List<Item> _bucketlist = [];
@@ -63,14 +66,14 @@ mixin ItemModel on ConnectedModel {
       'title': title,
       'description': description,
       'image':
-          'https://www.doublclicks.com/wp-content/uploads/2013/05/blurred-background-3.jpg',
+          'https://media.istockphoto.com/photos/blurred-backgroundabstract-background-with-bokeh-defocused-ligh-picture-id483416992?k=6&m=483416992&s=612x612&w=0&h=eEASdxV0G3OqF0k_IlKjU4FwMuBud231aqMSFu1IAh8=',
       'price': price,
       'userEmail': _authenticatedUser.email,
       'userId': _authenticatedUser.id,
     };
     try {
       final http.Response response = await http.post(
-          'https://flutter-item-manager.firebaseio.com/items.json',
+          'https://flutter-item-manager.firebaseio.com/items.json?auth=${_authenticatedUser.token}',
           body: json.encode(itemData));
 
       if (response.statusCode != 200 && response.statusCode != 201) {
@@ -106,14 +109,14 @@ mixin ItemModel on ConnectedModel {
       'title': title,
       'description': description,
       'image':
-          'https://www.doublclicks.com/wp-content/uploads/2013/05/blurred-background-3.jpg',
+          'https://media.istockphoto.com/photos/blurred-backgroundabstract-background-with-bokeh-defocused-ligh-picture-id483416992?k=6&m=483416992&s=612x612&w=0&h=eEASdxV0G3OqF0k_IlKjU4FwMuBud231aqMSFu1IAh8=',
       'price': price,
       'userEmail': selectedItem.userEmail,
       'userId': selectedItem.userId
     };
     return http
         .put(
-            'https://flutter-item-manager.firebaseio.com/items/${selectedItem.id}.json',
+            'https://flutter-item-manager.firebaseio.com/items/${selectedItem.id}.json?auth=${_authenticatedUser.token}',
             body: json.encode(updateItem))
         .then((http.Response response) {
       _isLoading = false;
@@ -143,7 +146,7 @@ mixin ItemModel on ConnectedModel {
     notifyListeners();
     return http
         .delete(
-            'https://flutter-item-manager.firebaseio.com/items/$deletedItemId.json')
+            'https://flutter-item-manager.firebaseio.com/items/$deletedItemId.json?auth=${_authenticatedUser.token}')
         .then((http.Response response) {
       _isLoading = false;
       notifyListeners();
@@ -159,7 +162,8 @@ mixin ItemModel on ConnectedModel {
     _isLoading = true;
     notifyListeners();
     return http
-        .get('https://flutter-item-manager.firebaseio.com/items.json')
+        .get(
+            'https://flutter-item-manager.firebaseio.com/items.json?auth=${_authenticatedUser.token}')
         .then<Null>((http.Response response) {
       final List<Item> fetchedItemsList = [];
       final Map<String, dynamic> fetchedItemsData = json.decode(response.body);
@@ -219,8 +223,121 @@ mixin ItemModel on ConnectedModel {
 }
 
 mixin UserModel on ConnectedModel {
-  void login(String email, String password) {
-    _authenticatedUser = User(id: '7139', email: email, password: password);
+  Timer _authTimer;
+  PublishSubject<bool> _userSubject = PublishSubject();
+
+  User get user {
+    return _authenticatedUser;
+  }
+
+  PublishSubject<bool> get userSubject {
+    return _userSubject;
+  }
+
+  Future<Map<String, dynamic>> authenticate(String email, String password,
+      [AuthMode mode = AuthMode.LoginMode]) async {
+    _isLoading = true;
+    notifyListeners();
+
+    final Map<String, dynamic> authData = {
+      'email': email,
+      'password': password,
+      'returnSecureToken': true,
+    };
+    http.Response response;
+    if (mode == AuthMode.LoginMode) {
+      response = await http.post(
+        'https://www.googleapis.com/identitytoolkit/v3/relyingparty/verifyPassword?key=AIzaSyDtNV_F79kyx1wdyIOBN6U3Rust7AwKJi8',
+        body: json.encode(authData),
+        headers: {'Content-Type': 'application/json'},
+      );
+    } else {
+      response = await http.post(
+        'https://www.googleapis.com/identitytoolkit/v3/relyingparty/signupNewUser?key=AIzaSyDtNV_F79kyx1wdyIOBN6U3Rust7AwKJi8',
+        body: json.encode(authData),
+        headers: {'Content-Type': 'application/json'},
+      );
+    }
+
+    final Map<String, dynamic> responseData = json.decode(response.body);
+    bool hasError = true;
+    String message = 'something went wrong';
+    if (responseData.containsKey('idToken')) {
+      hasError = false;
+      message = 'authenticated';
+      _authenticatedUser = User(
+        id: responseData['localId'],
+        email: email,
+        token: responseData['idToken'],
+      );
+      setAuthTimeout(int.parse(responseData['expiresIn']));
+      _userSubject.add(true);
+      final DateTime now = DateTime.now();
+      final DateTime expiry =
+          now.add(Duration(seconds: int.parse(responseData['expiresIn'])));
+      final SharedPreferences prefs = await SharedPreferences.getInstance();
+      prefs.setString('expiry', expiry.toIso8601String());
+      prefs.setString('token', responseData['idToken']);
+      prefs.setString('email', email);
+      prefs.setString('id', responseData['localId']);
+    } else if (responseData['error']['message'] == 'EMAIL_EXISTS') {
+      message = 'email already exists';
+    } else if (responseData['error']['message'] == 'EMAIL_NOT_FOUND') {
+      message = 'email does not exist';
+    } else if (responseData['error']['message'] == 'INVALID_PASSWORD') {
+      message = 'invalid password';
+    }
+
+    _isLoading = false;
+    notifyListeners();
+
+    return {
+      'success': !hasError,
+      'message': message,
+    };
+  }
+
+  void autoAuthenticate() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    final String _token = prefs.getString('token');
+    final String _expiryTime = prefs.getString('expiry');
+    if (_token != null) {
+      final DateTime now = DateTime.now();
+      final DateTime _expiry = DateTime.parse(_expiryTime);
+      if (_expiry.isBefore(now)) {
+        _authenticatedUser = null;
+        notifyListeners();
+        return;
+      }
+      final String _email = prefs.getString('email');
+      final String _id = prefs.getString('id');
+      final int _tokenLifeSpan = _expiry.difference(now).inSeconds;
+      _userSubject.add(true);
+      setAuthTimeout(_tokenLifeSpan);
+      _authenticatedUser = User(
+        id: _id,
+        email: _email,
+        token: _token,
+      );
+      notifyListeners();
+    }
+  }
+
+  void logout() async {
+    _authenticatedUser = null;
+    _authTimer.cancel();
+    _userSubject.add(false);
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    prefs.remove('token');
+    prefs.remove('email');
+    prefs.remove('id');
+    notifyListeners();
+  }
+
+  void setAuthTimeout(int time) {
+    _authTimer = Timer(Duration(seconds: time), () {
+      logout();
+    });
   }
 }
 
