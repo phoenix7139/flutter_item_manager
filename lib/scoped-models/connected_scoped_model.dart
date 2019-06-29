@@ -158,7 +158,7 @@ mixin ItemModel on ConnectedModel {
     });
   }
 
-  Future<Null> fetchItems() {
+  Future<Null> fetchItems({onlyForUser = false}) {
     _isLoading = true;
     notifyListeners();
     return http
@@ -181,10 +181,18 @@ mixin ItemModel on ConnectedModel {
           image: fetchedItemData['image'],
           userEmail: fetchedItemData['userEmail'],
           userId: fetchedItemData['userId'],
+          isFavourite: fetchedItemData['wishlistUsers'] == null
+              ? false
+              : (fetchedItemData['wishlistUsers'] as Map<String, dynamic>)
+                  .containsKey(_authenticatedUser.id),
         );
         fetchedItemsList.add(item);
       });
-      _bucketlist = fetchedItemsList;
+      _bucketlist = onlyForUser
+          ? fetchedItemsList.where((Item item) {
+              return item.userId == _authenticatedUser.id;
+            }).toList()
+          : fetchedItemsList;
       _isLoading = false;
       notifyListeners();
       _currentItemId = null;
@@ -195,7 +203,7 @@ mixin ItemModel on ConnectedModel {
     });
   }
 
-  void toggleIsFavourite() {
+  void toggleIsFavourite() async {
     final bool isCurrentlyFavourite = !selectedItem.isFavourite;
     final Item updatedItem = Item(
         id: selectedItem.id,
@@ -208,6 +216,31 @@ mixin ItemModel on ConnectedModel {
         isFavourite: isCurrentlyFavourite);
     _bucketlist[selectedItemIndex] = updatedItem;
     notifyListeners();
+    http.Response response;
+    if (isCurrentlyFavourite) {
+      response = await http.put(
+        'https://flutter-item-manager.firebaseio.com/items/${selectedItem.id}/wishlistUsers/${_authenticatedUser.id}.json?auth=${_authenticatedUser.token}',
+        body: jsonEncode(true),
+      );
+    } else {
+      response = await http.delete(
+        'https://flutter-item-manager.firebaseio.com/items/${selectedItem.id}/wishlistUsers/${_authenticatedUser.id}.json?auth=${_authenticatedUser.token}',
+      );
+    }
+    if (response.statusCode != 200 && response.statusCode != 201) {
+      final Item updatedItem = Item(
+          id: selectedItem.id,
+          title: selectedItem.title,
+          description: selectedItem.description,
+          price: selectedItem.price,
+          image: selectedItem.image,
+          userEmail: selectedItem.userEmail,
+          userId: selectedItem.userId,
+          isFavourite: !isCurrentlyFavourite);
+      _bucketlist[selectedItemIndex] = updatedItem;
+      notifyListeners();
+    }
+
     _currentItemId = null;
   }
 

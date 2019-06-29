@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+// import 'package:myapp/widgets/location_input.dart';
 
 import 'package:scoped_model/scoped_model.dart';
 
@@ -193,6 +194,10 @@ class _ItemEditPageState extends State<ItemEditPage> {
                 height: 10.0,
               ),
               _buildPriceField(selectedItem),
+              SizedBox(
+                height: 20.0,
+              ),
+              // LocationInput(),
               SizedBox(
                 height: 20.0,
               ),

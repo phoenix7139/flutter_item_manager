@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 // import 'package:flutter/rendering.dart';
 
 import 'package:scoped_model/scoped_model.dart';
+import 'package:map_view/map_view.dart';
 
-// import './item_adder.dart';
 import './pages/authentication.dart';
 import './pages/item_admin.dart';
 import './pages/home.dart';
@@ -15,6 +15,8 @@ void main() {
   // debugPaintSizeEnabled = true;
   // debugPaintBaselinesEnabled = true;
   // debugPaintPointersEnabled = true;
+  // MapView.setApiKey('AIzaSyA2fDW_LSDHLevrlZtrvDqex3tdsm0M-hU');
+  MapView.setApiKey('AIzaSyAIZ1SPf-2xwgrmndbp7TImdyQK5HZ4ihk');
   runApp(MyApp());
 }
 
