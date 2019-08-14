@@ -1,6 +1,6 @@
 # myapp
 
-A new Flutter project.
+A flutter app that allows the user to add, edit and delete items which are visible to all users. basic clone of buying/selling apps.
 
 ## Getting Started
 
